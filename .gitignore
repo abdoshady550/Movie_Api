@@ -58,3 +58,6 @@ packages/
 .idea/
 .appsettings.json
 .vs
+/Properties
+/appsettings.Development.json
+/appsettings.json
