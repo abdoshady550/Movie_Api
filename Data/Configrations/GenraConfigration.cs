@@ -15,7 +15,9 @@ namespace Movie_Api.Data.Configrations
                 .HasColumnType("VARCHAR")
                 .HasMaxLength(50)
                 .IsRequired();
+
             builder.HasData(SeedGenres());
+
         }
         public static List<Genra> SeedGenres()
         {

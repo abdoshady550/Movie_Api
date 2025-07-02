@@ -9,6 +9,6 @@ namespace Movie_Api.Model.Eintites
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string Name { get; set; }
-        public virtual ICollection<Genra> Genras { get; set; } = new List<Genra>();
+        public virtual ICollection<Movie> Movies { get; set; } = new List<Movie>();
     }
 }
