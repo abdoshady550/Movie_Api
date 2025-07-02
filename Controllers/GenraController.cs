@@ -1,30 +1,43 @@
 ﻿namespace Movie_Api.Controllers
 {
     using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Http.HttpResults;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using Movie_Api.Data;
     using Movie_Api.Model.Dtos;
     using Movie_Api.Model.Eintites;
+    using Movie_Api.Services;
 
     [Route("api/[controller]")]
     [ApiController]
     public class GenraController : ControllerBase
     {
-        private readonly AppDbContext _context;
 
-        public GenraController(AppDbContext context)
+        private readonly IGenraService _service;
+
+
+        public GenraController(IGenraService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Genra>>> GetAllGenra()
         {
-            var AllGenra = await _context.Genras.OrderBy(e => e.Name).ToListAsync();
+            var AllGenra = await _service.GetAll();
             return Ok(AllGenra);
         }
+        [HttpGet]
+        [Route("{id}")]
+        public async Task<ActionResult> GetGenraById(int id)
+        {
+            var item = await _service.GetById(id);
+            if (item == null)
+                return NotFound();
 
+            return Ok(item);
+        }
         [HttpPost]
         public async Task<ActionResult> AddGenra(CreateGenraDto GenraDto)
         {
@@ -32,8 +45,7 @@
                 return BadRequest();
 
             var item = new Genra() { Name = GenraDto.Name };
-            await _context.Genras.AddAsync(item);
-            await _context.SaveChangesAsync();
+            await _service.Add(item);
             return Ok(item);
         }
 
@@ -43,12 +55,12 @@
             if (GenraDto == null)
                 return BadRequest();
 
-            var item = await _context.Genras.FindAsync(id);
+            var item = await _service.GetById(id);
             if (item == null)
                 return NotFound();
 
             item.Name = GenraDto.Name;
-            await _context.SaveChangesAsync();
+            _service.Update(item);
 
             return Ok(item);
         }
@@ -57,12 +69,11 @@
         public async Task<ActionResult> DeleteGenraById(int id)
         {
 
-            var item = await _context.Genras.FindAsync(id);
+            var item = await _service.GetById(id);
             if (item == null)
                 return NotFound();
 
-            _context.Genras.Remove(item);
-            _context.SaveChanges();
+            _service.Delete(item);
 
             return Ok(item);
         }
