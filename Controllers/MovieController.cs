@@ -1,80 +1,51 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Movie_Api.Data;
-using Movie_Api.Model.Dtos;
-using Movie_Api.Model.Eintites;
-
-namespace Movie_Api.Controllers
+﻿namespace Movie_Api.Controllers
 {
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using Movie_Api.Data;
+    using Movie_Api.Model.Dtos;
+    using Movie_Api.Model.Eintites;
+    using Movie_Api.Services;
+
     [Route("api/[controller]")]
     [ApiController]
     public class MovieController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IMovieService _service;
+
         private List<string> _allowedExtention = new List<string> { ".jpg", ".png" };
-        public MovieController(AppDbContext context)
+
+        public MovieController(IMovieService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
         [Route("{id}")]
         public async Task<ActionResult> GetMovieById(int id)
         {
-            var Movie = await _context.Movies.FindAsync(id);
+            var Movie = await _service.GetById(id);
             if (Movie == null)
                 return NotFound();
 
-
             return Ok(Movie);
         }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Movie>>> GetAllMovies()
         {
-            var AllMovies = await _context.Movies
-                .AsNoTracking()
-                .OrderByDescending(m => m.Rate)
-                .Include(e => e.Genra)
-                .Select(m => new
-                {
-                    m.Id,
-                    m.Title,
-                    m.Rate,
-                    m.Storyline,
-                    m.Year,
-                    m.Poster,
-                    m.GenraId,
-                    m.Genra.Name
-
-
-                })
-                .ToListAsync();
+            var AllMovies = await _service.GetAll();
             return Ok(AllMovies);
         }
+
         [HttpGet]
         [Route("GetByGenraId")]
         public async Task<ActionResult> GetMoviesByGenra(int genraId)
         {
-            var AllMovies = await _context.Movies
-                .Where(m => m.GenraId == genraId)
-                .Include(e => e.Genra)
-                .Select(m => new
-                {
-                    m.Id,
-                    m.Title,
-                    m.Rate,
-                    m.Storyline,
-                    m.Year,
-                    m.Poster,
-                    m.GenraId,
-                    m.Genra.Name
+            var AllMovies = await _service.GetMoviesByType(genraId);
 
-
-                })
-                .ToListAsync();
-
-            if (AllMovies.Count == 0)
+            if (AllMovies.Count() == 0)
                 return NotFound("Not Founded");
 
             return Ok(AllMovies);
@@ -84,7 +55,7 @@ namespace Movie_Api.Controllers
         [Route("{id}")]
         public async Task<ActionResult> UpdateMovie(int id, [FromForm] UpdateMovieDto dto)
         {
-            var Movie = await _context.Movies.FindAsync(id);
+            var Movie = await _service.GetById(id);
             if (Movie == null)
                 return NotFound();
 
@@ -111,10 +82,11 @@ namespace Movie_Api.Controllers
             if (dto.Year.HasValue)
                 Movie.Year = dto.Year.Value;
 
-            await _context.SaveChangesAsync();
+            _service.Update(Movie);
 
             return Ok(Movie);
         }
+
         [HttpPost]
         public async Task<ActionResult> AddMovie(MovieDto dto)
         {
@@ -137,19 +109,19 @@ namespace Movie_Api.Controllers
                 GenraId = dto.GenraId,
 
             };
-            await _context.Movies.AddAsync(movie);
-            await _context.SaveChangesAsync();
+            await _service.Add(movie);
             return Ok(movie);
         }
+
         [HttpDelete]
         [Route("{id}")]
         public async Task<ActionResult> DeleteMovieById(int id)
         {
-            var Movie = await _context.Movies.FindAsync(id);
+            var Movie = await _service.GetById(id);
             if (Movie == null)
                 return NotFound();
-            _context.Remove(Movie);
-            await _context.SaveChangesAsync();
+
+            _service.Delete(Movie);
             return Ok("Movie Deleted ");
         }
     }
