@@ -1,9 +1,11 @@
 ﻿namespace Movie_Api.Controllers
 {
+    using System.Collections.Generic;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using Movie_Api.Data;
+    using Movie_Api.Handler;
     using Movie_Api.Mappers;
     using Movie_Api.Model.Dtos;
     using Movie_Api.Model.Eintites;
@@ -27,9 +29,11 @@
         public async Task<ActionResult<IEnumerable<Movie>>> GetAllMovies()
         {
             var AllMovies = await _service.GetAll();
+            if (AllMovies == null)
+                throw new ApiException($"Has No Data Back", StatusCodes.Status204NoContent);
 
             var dto = MovieMapper.ReadMoviesDto(AllMovies);
-            return Ok(dto);
+            return Ok(APIRespone<IEnumerable<ReadMovieDto>>.CreateSuccess(dto));
         }
 
         [HttpGet]
@@ -38,10 +42,10 @@
         {
             var Movie = await _service.GetById(id);
             if (Movie == null)
-                return NotFound();
+                throw new ApiException($"Not Found", StatusCodes.Status404NotFound);
             var dto = MovieMapper.ReadMovieDto(Movie);
 
-            return Ok(dto);
+            return Ok(APIRespone<ReadMovieDto>.CreateSuccess(dto));
         }
 
         [HttpGet]
@@ -51,10 +55,11 @@
             var AllMovies = await _service.GetMoviesByType(genraId);
 
             if (AllMovies.Count() == 0)
-                return NotFound("Not Founded");
+                throw new ApiException($"No Element Found", StatusCodes.Status404NotFound);
+
             var dto = MovieMapper.ReadMoviesDto(AllMovies);
 
-            return Ok(dto);
+            return Ok(APIRespone<IEnumerable<ReadMovieDto>>.CreateSuccess(dto));
         }
 
         [HttpPut]
@@ -63,7 +68,8 @@
         {
             var Movie = await _service.GetById(id);
             if (Movie == null)
-                return NotFound();
+                throw new ApiException($"Not Found", StatusCodes.Status404NotFound);
+
 
             if (dto.Poster != null)
             {
@@ -93,14 +99,15 @@
             var Moviedto = MovieMapper.ReadMovieDto(Movie);
 
 
-            return Ok(Moviedto);
+            return Ok(APIRespone<ReadMovieDto>.CreateSuccess(Moviedto, "Updated successfully"));
         }
 
         [HttpPost]
-        public async Task<ActionResult> AddMovie(MovieDto dto)
+        public async Task<ActionResult> AddMovie([FromBody] MovieDto dto)
         {
             if (dto == null)
-                return BadRequest();
+                throw new ApiException($"Bad Request From The Body", StatusCodes.Status400BadRequest);
+
 
             if (!_allowedExtention.Contains(Path.GetExtension(dto.Poster.FileName).ToLower()))
                 return BadRequest(error: "only .png or .jpg Extention");
@@ -110,7 +117,7 @@
 
             var movie = MovieMapper.CreateMovieDto(dto, dataStream);
             await _service.Add(movie);
-            return Ok(movie);
+            return Ok(APIRespone<Movie>.CreateSuccess(movie, "Created successfully"));
         }
 
         [HttpDelete]
@@ -119,10 +126,11 @@
         {
             var Movie = await _service.GetById(id);
             if (Movie == null)
-                return NotFound();
+                throw new ApiException($"Not Found", StatusCodes.Status404NotFound);
 
+            var dto = MovieMapper.ReadMovieDto(Movie);
             _service.Delete(Movie);
-            return Ok("Movie Deleted ");
+            return Ok(APIRespone<ReadMovieDto>.CreateSuccess(dto, "Deleted successfully"));
         }
     }
 }
