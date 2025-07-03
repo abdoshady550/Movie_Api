@@ -1,7 +1,9 @@
 using System.Text.Json.Serialization;
+using Asp.net_Web_Api.Meddlewares;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Movie_Api.Data;
+using Movie_Api.Middleware;
 using Movie_Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +16,7 @@ builder.Services.AddControllers()
                     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
                     options.JsonSerializerOptions.WriteIndented = true;
                 });
+builder.Services.AddMemoryCache();
 
 builder.Services.AddDbContext<AppDbContext>
 (option => option.UseSqlServer((builder.Configuration.GetConnectionString("DefaultConnection"))));
@@ -33,7 +36,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseMiddleware<ErrorHandlingMiddleware>();
+app.UseMiddleware<RateLimiterMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
