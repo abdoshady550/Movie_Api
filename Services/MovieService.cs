@@ -17,7 +17,7 @@ namespace Movie_Api.Services
 
         public async Task<IEnumerable<Movie>> GetAll()
         {
-            return await _context.Movies.OrderByDescending(e => e.Rate).ToListAsync();
+            return await _context.Movies.OrderBy(e => e.Id).Include(g => g.Genra).ToListAsync();
 
         }
         public async Task<Movie> GetById(int id)
@@ -61,7 +61,6 @@ namespace Movie_Api.Services
         {
             var AllMovies = _context.Movies
                 .Where(m => m.GenraId == genraId)
-                .Include(e => e.Genra)
               .ToListAsync();
             return AllMovies;
 

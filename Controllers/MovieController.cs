@@ -4,6 +4,7 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using Movie_Api.Data;
+    using Movie_Api.Mappers;
     using Movie_Api.Model.Dtos;
     using Movie_Api.Model.Eintites;
     using Movie_Api.Services;
@@ -21,6 +22,16 @@
             _service = service;
         }
 
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Movie>>> GetAllMovies()
+        {
+            var AllMovies = await _service.GetAll();
+
+            var dto = MovieMapper.ReadMoviesDto(AllMovies);
+            return Ok(dto);
+        }
+
         [HttpGet]
         [Route("{id}")]
         public async Task<ActionResult> GetMovieById(int id)
@@ -28,15 +39,9 @@
             var Movie = await _service.GetById(id);
             if (Movie == null)
                 return NotFound();
+            var dto = MovieMapper.ReadMovieDto(Movie);
 
-            return Ok(Movie);
-        }
-
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Movie>>> GetAllMovies()
-        {
-            var AllMovies = await _service.GetAll();
-            return Ok(AllMovies);
+            return Ok(dto);
         }
 
         [HttpGet]
@@ -47,8 +52,9 @@
 
             if (AllMovies.Count() == 0)
                 return NotFound("Not Founded");
+            var dto = MovieMapper.ReadMoviesDto(AllMovies);
 
-            return Ok(AllMovies);
+            return Ok(dto);
         }
 
         [HttpPut]
@@ -63,6 +69,7 @@
             {
                 if (!_allowedExtention.Contains(Path.GetExtension(dto.Poster.FileName).ToLower()))
                     return BadRequest(error: "only .png or .jpg Extention");
+
                 using var dataStream = new MemoryStream();
                 await dto.Poster.CopyToAsync(dataStream);
                 Movie.Poster = dataStream.ToArray();
@@ -83,8 +90,10 @@
                 Movie.Year = dto.Year.Value;
 
             _service.Update(Movie);
+            var Moviedto = MovieMapper.ReadMovieDto(Movie);
 
-            return Ok(Movie);
+
+            return Ok(Moviedto);
         }
 
         [HttpPost]
@@ -99,16 +108,7 @@
             using var dataStream = new MemoryStream();
             await dto.Poster.CopyToAsync(dataStream);
 
-            var movie = new Movie()
-            {
-                Title = dto.Title,
-                Rate = dto.Rate,
-                Storyline = dto.Storyline,
-                Year = dto.Year,
-                Poster = dataStream.ToArray(),
-                GenraId = dto.GenraId,
-
-            };
+            var movie = MovieMapper.CreateMovieDto(dto, dataStream);
             await _service.Add(movie);
             return Ok(movie);
         }
