@@ -8,7 +8,7 @@
         public double Rate { get; set; }
         public string? Storyline { get; set; }
         public byte[]? Poster { get; set; }
-
+        public string? PosterUrl { get; set; }
         public int GenraId { get; set; }
 
         public Genra? Genra { get; set; }
