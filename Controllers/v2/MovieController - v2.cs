@@ -35,7 +35,8 @@
                 throw new ApiException($"Has No Data Back", StatusCodes.Status204NoContent);
 
             var dto = MovieMapperV2.ReadMoviesDto(AllMovies);
-            return Ok(APIRespone<IEnumerable<ReadMovieDto2>>.CreateSuccess(dto));
+            return Ok(APIRespone<IEnumerable<ReadMovieDto2>>.
+                CreateSuccess(dto, version: "ApiVersion:2.0"));
         }
 
         [HttpGet]
@@ -47,7 +48,8 @@
                 throw new ApiException($"Not Found", StatusCodes.Status404NotFound);
             var dto = MovieMapperV2.ReadMovieDto(Movie);
 
-            return Ok(APIRespone<ReadMovieDto2>.CreateSuccess(dto));
+            return Ok(APIRespone<ReadMovieDto2>
+                .CreateSuccess(dto, version: "ApiVersion:2.0"));
         }
 
         [HttpGet]
@@ -61,7 +63,8 @@
 
             var dto = MovieMapperV2.ReadMoviesDto(AllMovies);
 
-            return Ok(APIRespone<IEnumerable<ReadMovieDto2>>.CreateSuccess(dto));
+            return Ok(APIRespone<IEnumerable<ReadMovieDto2>>
+                .CreateSuccess(dto, version: "ApiVersion:2.0"));
         }
 
         [HttpPut]
@@ -110,7 +113,8 @@
             var Moviedto = MovieMapperV2.ReadMovieDto(Movie);
 
 
-            return Ok(APIRespone<ReadMovieDto2>.CreateSuccess(Moviedto, "Updated successfully"));
+            return Ok(APIRespone<ReadMovieDto2>
+                .CreateSuccess(Moviedto, "Updated successfully", version: "ApiVersion:2.0"));
         }
 
         [HttpPost]
@@ -146,7 +150,8 @@
                 PosterUrl = $"/uploads/movies/{fileName}"
             };
             await _service.Add(movie);
-            return Ok(APIRespone<Movie>.CreateSuccess(movie, "Created successfully"));
+            return Ok(APIRespone<Movie>
+                .CreateSuccess(movie, "Created successfully", version: "ApiVersion:2.0"));
         }
 
         [HttpDelete]
@@ -159,7 +164,7 @@
 
             var dto = MovieMapperV2.ReadMovieDto(Movie);
             _service.Delete(Movie);
-            return Ok(APIRespone<ReadMovieDto2>.CreateSuccess(dto, "Deleted successfully"));
+            return Ok(APIRespone<ReadMovieDto2>.CreateSuccess(dto, "Deleted successfully", version: "ApiVersion:2.0"));
         }
     }
 }
