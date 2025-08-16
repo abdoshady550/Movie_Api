@@ -13,7 +13,8 @@ Welcome to the **Movie API**! This project is a RESTful API built with C# for ma
 - ⭐Supports genres and movie ratings 
 - 🖼️Upload and manage movie posters 
 - 📦 Custom API responses for consistency 
-- 🛡️ Simple rate limiting middleware to prevent abuse 
+- 🛡️ Simple rate limiting middleware to prevent abuse
+- 🔀 API Versioning (v1, v2) support with headers
 
 ---
 
@@ -21,6 +22,8 @@ Welcome to the **Movie API**! This project is a RESTful API built with C# for ma
 
 ```
 ├── Controllers/           # API controllers (MovieController.cs)
+│   ├── v1/                # Version 1 Controllers (MovieController.cs)
+│   └── v2/                # Version 2 Controllers (MovieController.cs with updates)
 ├── Data/
 │   └── Configrations/     # Entity configurations (MovieConfigration.cs)
 ├── Handler/               # Custom API responses & exceptions (APIRespone.cs, ApiException.cs)
@@ -68,10 +71,38 @@ Welcome to the **Movie API**! This project is a RESTful API built with C# for ma
    - `DELETE /api/movie/{id}` - Delete a movie
 
 ---
+## 🔀 API Versioning
 
+Versioning is now supported! multiple API versions (currently v1 and v2).
+
+### 📌 How to specify version
+You can use the -Accept- header:
+- Version 1:
+  ```
+  Accept: application/json;v=1.0
+  
+  ```
+
+- Version 2:
+  ```
+  Accept: application/json;v=2.0
+
+  ```
+Examples:
+
+GET /api/movie (with Accept: application/json;v=1.0) → returns movies in v1 format
+
+GET /api/movie (with Accept: application/json;v=2.0) → returns movies in v2 format
+
+✔️ You can test using Swagger UI or Postman by adding the Accept header.
+
+Refer to each version’s documentation for details about the available fields and differences between versions.
+---
 ## 📚 Notable Files
 
 - `Controllers/MovieController.cs` - API endpoints
+ - `Controllers/v1/MovieController.cs` - Version 1 API
+ - `Controllers/v2/MovieController.cs` - Version 2 API
 - `Services/MovieService.cs` - Business logic
 - `Model/Eintites/Movie.cs` - Movie entity definition
 - `Handler/APIRespone.cs` - API response wrapper
